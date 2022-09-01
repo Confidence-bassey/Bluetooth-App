@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     public void searchbtnClicked(View view){
         tview.setText("Searching available devices...");
         searchBtn.setEnabled(false);
+        bluetoothAdapter.startDiscovery();
     }
 
     private  final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -32,6 +33,11 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             Log.i("Action performed is: ", action);
+
+            if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+                tview.setText("Device found");
+                searchBtn.setEnabled(true);
+            }
         }
     };
 
@@ -52,8 +58,7 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(receiver,intentFilter);
-
-        bluetoothAdapter.startDiscovery();
+        
 
     }
 }
