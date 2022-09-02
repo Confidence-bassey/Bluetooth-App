@@ -11,10 +11,13 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,12 +26,8 @@ public class MainActivity extends AppCompatActivity {
     Button searchBtn;
     BluetoothAdapter bluetoothAdapter;
 
-    public void searchbtnClicked(View view){
-        tview.setText("Searching available devices...");
-        searchBtn.setEnabled(false);
-        bluetoothAdapter.startDiscovery();
-        Toast.makeText(MainActivity.this, "Search started", Toast.LENGTH_SHORT).show();
-    }
+    ArrayList<String> availableDevices = new ArrayList<>();
+    ArrayAdapter arrayAdapter;
 
     private  final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -37,17 +36,32 @@ public class MainActivity extends AppCompatActivity {
             Log.i("Action performed is: ", action);
 
             if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
-                tview.setText("Device found");
+                tview.setText("Finished");
                 searchBtn.setEnabled(true);
             }else if(BluetoothDevice.ACTION_FOUND.equals(action)){
                 BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String address = foundDevice.getAddress();
                 String name = foundDevice.getName();
                 String rssi = Integer.toString(intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE));
-                Log.i("Found device"," Name: "+name+ " Address: "+address+" rssi: "+rssi);
+                //Log.i("Found device"," Name: "+name+ " Address: "+address+" rssi: "+rssi);
+                if(name==null||name.equals("")){
+                    availableDevices.add(address+ " "+"- RSSI"+ rssi+" dBm");
+                }else{
+                    availableDevices.add(name+ " "+"- RSSI"+ rssi+" dBm");
+                }
+                arrayAdapter.notifyDataSetChanged();
             }
         }
     };
+
+
+    public void searchbtnClicked(View view){
+        tview.setText("Searching available devices...");
+        searchBtn.setEnabled(false);
+        bluetoothAdapter.startDiscovery();
+        Toast.makeText(MainActivity.this, "Search started", Toast.LENGTH_SHORT).show();
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
         listView = findViewById(R.id.listview);
         tview = findViewById(R.id.deviceStatus);
         searchBtn = findViewById(R.id.searchbtn);
+
+        arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, availableDevices);
+
+        listView.setAdapter(arrayAdapter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
