@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter bluetoothAdapter;
 
     ArrayList<String> availableDevices = new ArrayList<>();
+    ArrayList<String> availableDeviceAddresses = new ArrayList<>();
     ArrayAdapter arrayAdapter;
 
     private  final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -44,10 +45,15 @@ public class MainActivity extends AppCompatActivity {
                 String name = foundDevice.getName();
                 String rssi = Integer.toString(intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE));
                 //Log.i("Found device"," Name: "+name+ " Address: "+address+" rssi: "+rssi);
+                availableDeviceAddresses.add(address);
+                String deviceSt = "";
                 if(name==null||name.equals("")){
-                    availableDevices.add(address+ " "+"- RSSI"+ rssi+" dBm");
+                    deviceSt = address+ " "+"- RSSI"+ rssi+" dBm";
                 }else{
-                    availableDevices.add(name+ " "+"- RSSI"+ rssi+" dBm");
+                    deviceSt = name+ " "+"- RSSI"+ rssi+" dBm";
+                }
+                if(!availableDevices.contains(deviceSt)){
+                    availableDevices.add(deviceSt);
                 }
                 arrayAdapter.notifyDataSetChanged();
             }
@@ -58,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
     public void searchbtnClicked(View view){
         tview.setText("Searching available devices...");
         searchBtn.setEnabled(false);
+        availableDevices.clear();
+        availableDeviceAddresses.clear();
         bluetoothAdapter.startDiscovery();
         Toast.makeText(MainActivity.this, "Search started", Toast.LENGTH_SHORT).show();
     }
